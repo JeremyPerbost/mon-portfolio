@@ -1,0 +1,21 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+build/
+dist/
+
+# Cache
+.cache/
+.vite/
+
+# GitHub Pages cache
+node_modules/.cache/gh-pages/
+
+# IDE / MacOS
+.DS_Store
+.idea/
+.vscode/
