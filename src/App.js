@@ -15,6 +15,7 @@ function App() {
     { href: "#experiences", label: "Expériences" },
     { href: "#projets", label: "Projets" },
     { href: "#contact", label: "Contact" },
+    { href: "#terminal", label: "Terminal" },
     {
       label: "CV",
       children: [

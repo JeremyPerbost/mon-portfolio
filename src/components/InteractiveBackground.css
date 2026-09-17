@@ -52,6 +52,15 @@ body[data-theme="contact"] {
   --ambient-second-y: -28%;
 }
 
+body[data-theme="terminal"] {
+  --ambient-primary: #2aca8f;
+  --ambient-secondary: #284cb2;
+  --ambient-first-x: -18%;
+  --ambient-first-y: 16%;
+  --ambient-second-x: 52%;
+  --ambient-second-y: -30%;
+}
+
 .ambient-background {
   position: fixed;
   inset: 0;

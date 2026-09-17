@@ -1354,6 +1354,22 @@ body .section.section-projects {
   filter: invert(1) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 }
 
+body .section.section-terminal {
+  padding: 30px max(48px, 6vw) 34px;
+}
+
+.terminal-section {
+  max-width: 1180px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.terminal-section__header .section-heading {
+  margin-bottom: 0;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(26px);
@@ -1415,6 +1431,14 @@ body .section.section-projects {
     width: 100%;
     max-width: none;
   }
+}
+
+@media (max-width: 640px) {
+  body .section.section-terminal {
+    padding: 24px 36px 24px 16px;
+  }
+  .terminal-section { gap: 12px; }
+  .terminal-section__header .section-heading { font-size: clamp(2rem, 10vw, 3rem); }
 }
 
 @media (max-width: 640px) {

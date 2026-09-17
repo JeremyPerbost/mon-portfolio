@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ProjectGallery from "../components/ProjectGallery";
 import ExperienceGallery from "../components/ExperienceGallery";
+import TerminalGame from "../games/terminal/TerminalGame";
 import emailjs from "@emailjs/browser";
 import { motion } from "framer-motion";
 
@@ -155,6 +156,7 @@ const sectionNav = [
   { id: "experiences", label: "Expériences" },
   { id: "projets", label: "Projets" },
   { id: "contact", label: "Contact" },
+  { id: "terminal", label: "Terminal" },
 ];
 
 function Home() {
@@ -169,7 +171,19 @@ function Home() {
     if (!targetId) return undefined;
 
     const frame = window.requestAnimationFrame(() => {
-      document.getElementById(targetId)?.scrollIntoView({ block: "start" });
+      const target = document.getElementById(targetId);
+      const scroller = document.querySelector(".content");
+      if (!target || !scroller) return;
+
+      const previousBehavior = scroller.style.scrollBehavior;
+      const previousSnap = scroller.style.scrollSnapType;
+      scroller.style.scrollBehavior = "auto";
+      scroller.style.scrollSnapType = "none";
+      scroller.scrollTop = target.offsetTop;
+      window.requestAnimationFrame(() => {
+        scroller.style.scrollBehavior = previousBehavior;
+        scroller.style.scrollSnapType = previousSnap;
+      });
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -253,7 +267,7 @@ function Home() {
 
       const handleWheel = (event) => {
         // Let horizontal swipes and the gallery's native vertical overflow scroll freely.
-        if (event.target.closest(".project-gallery, .experience-gallery")) return;
+        if (event.target.closest(".project-gallery, .experience-gallery, .terminal-game")) return;
         if (locked) return;
         const delta = event.deltaY;
         if (Math.abs(delta) < 24) return;
@@ -503,6 +517,24 @@ function Home() {
               </button>
             </form>
           </div>
+        </div>
+      </motion.section>
+
+      <motion.section
+        id="terminal"
+        className="section section-terminal"
+        data-theme-section="terminal"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.35 }}
+        variants={sectionVariants}
+        custom={6}
+      >
+        <div className="section-content terminal-section">
+          <div className="terminal-section__header">
+            <h2 className="section-heading">Terminal<span aria-hidden="true">.</span></h2>
+          </div>
+          <TerminalGame />
         </div>
       </motion.section>
     </>

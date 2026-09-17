@@ -1,0 +1,55 @@
+.terminal-game {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border: 1px solid rgba(113, 242, 182, .22);
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(4, 8, 18, .88);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .42);
+}
+.terminal-game__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(113, 242, 182, .16);
+  color: rgba(225, 244, 237, .65);
+  font: 700 .68rem "Fira Code", Consolas, monospace;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.terminal-game__bar span:first-child { display: inline-flex; align-items: center; gap: 9px; color: #baffdf; }
+.terminal-game__bar i { width: 8px; height: 8px; border-radius: 50%; background: #71f2b6; box-shadow: 0 0 14px #71f2b6; }
+.terminal-game__screen { position: relative; min-height: 0; background: #050814; }
+.terminal-game canvas { display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; outline: none; cursor: crosshair; touch-action: none; }
+.terminal-game canvas:focus-visible { box-shadow: inset 0 0 0 3px #71f2b6; }
+.terminal-game__screen button {
+  position: absolute;
+  left: 50%;
+  top: 64%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-width: 190px;
+  padding: 13px 17px;
+  border: 1px solid #71f2b6;
+  border-radius: 999px;
+  background: #71f2b6;
+  color: #04100b;
+  font: 800 .85rem "Inter", sans-serif;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.terminal-game__screen button:hover { transform: translate(-50%, calc(-50% - 2px)); box-shadow: 0 12px 30px rgba(113, 242, 182, .25); }
+.terminal-game__help { display: flex; justify-content: space-between; gap: 16px; margin: 0; padding: 10px 16px; color: rgba(225, 244, 237, .52); font: 600 .68rem "Fira Code", Consolas, monospace; }
+@media (max-width: 640px) {
+  .terminal-game { border-radius: 16px; }
+  .terminal-game__bar { padding: 9px 12px; }
+  .terminal-game__help { padding: 9px 12px; }
+  .terminal-game__help span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .terminal-game__screen button { transition: none; } }
