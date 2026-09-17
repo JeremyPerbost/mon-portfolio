@@ -454,83 +454,54 @@ function Home() {
         <div className="section-content contact">
           <div className="contact-header">
             <h2 className="section-heading">Me contacter<span aria-hidden="true">.</span></h2>
-            <p className="section-body">
-              Écrivez-moi pour une opportunité, une collaboration ou un retour sur mes projets.
-            </p>
           </div>
 
           <div className="contact-grid">
-            <form className="contact-form" onSubmit={handleContactSubmit} autoComplete="on" noValidate>
-              <label className="contact-field">
-                <span>Nom</span>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleContactChange}
-                  required
-                  minLength={2}
-                  maxLength={80}
-                  placeholder="Votre nom"
-                />
-              </label>
-              <label className="contact-field">
-                <span>Email</span>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleContactChange}
-                  required
-                  maxLength={120}
-                  placeholder="vous@example.com"
-                  inputMode="email"
-                  autoComplete="email"
-                />
-              </label>
-              <label className="contact-field">
-                <span>Message</span>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleContactChange}
-                  required
-                  minLength={10}
-                  maxLength={1000}
-                  placeholder="Votre message"
-                  rows={5}
-                />
-              </label>
-              <button type="submit" className="contact-submit" aria-label="Envoyer">
-                <span className="material-symbols-outlined" aria-hidden="true">send</span>
-              </button>
-            </form>
+            <aside className="contact-info">
+              <div className="contact-availability"><i aria-hidden="true" />Disponible pour échanger</div>
+              <p className="contact-pitch">Une idée, une opportunité<br />ou un projet&nbsp;?</p>
+              <a className="contact-email" href="mailto:Jeremy1perbost@gmail.com">
+                Jeremy1perbost@gmail.com <span aria-hidden="true">↗</span>
+              </a>
+              <a className="contact-phone" href="tel:+33636100731">+33 6 36 10 07 31</a>
 
-            <div className="contact-info">
-              <div>
-                <span className="contact-label">Email</span>
-                <a href="mailto:Jeremy1perbost@gmail.com">Jeremy1perbost@gmail.com</a>
-              </div>
-              <div>
-                <span className="contact-label">Téléphone</span>
-                <a href="tel:+33636100731">+33 06 36 10 07 31</a>
-              </div>
-              <div className="contact-links">
-                <span className="contact-label">Réseaux</span>
+              <nav className="contact-links" aria-label="Réseaux professionnels">
                 <a href="https://www.linkedin.com/in/jeremy-perbost-54ba96192/" target="_blank" rel="noreferrer" className="contact-link">
-                  <img src="/ressources/contact_images/LinkedIn_icon.svg.png" alt="LinkedIn" loading="lazy" />
-                  LinkedIn
+                  <img src="/ressources/contact_images/LinkedIn_icon.svg.png" alt="" loading="lazy" />
+                  <span>LinkedIn</span><b aria-hidden="true">↗</b>
                 </a>
                 <a href="https://github.com/JeremyPerbost" target="_blank" rel="noreferrer" className="contact-link">
-                  <img src="/ressources/contact_images/github_icone.svg" alt="GitHub" loading="lazy" />
-                  GitHub
+                  <img src="/ressources/contact_images/github_icone.svg" alt="" loading="lazy" />
+                  <span>GitHub</span><b aria-hidden="true">↗</b>
                 </a>
                 <a href="https://jeremy-perbost.itch.io/" target="_blank" rel="noreferrer" className="contact-link">
-                  <img src="/ressources/contact_images/itchio_icone.webp" alt="itch.io" loading="lazy" />
-                  itch.io
+                  <img src="/ressources/contact_images/itchio_icone.webp" alt="" loading="lazy" />
+                  <span>itch.io</span><b aria-hidden="true">↗</b>
                 </a>
+              </nav>
+            </aside>
+
+            <form className="contact-form" onSubmit={handleContactSubmit} autoComplete="on">
+              <div className="contact-form__topline"><span>Écrivez-moi</span><span aria-hidden="true">01 — 03</span></div>
+              <div className="contact-form__row">
+                <label className="contact-field">
+                  <span>Nom</span>
+                  <input type="text" name="name" value={formData.name} onChange={handleContactChange} required minLength={2} maxLength={80} placeholder="Votre nom" autoComplete="name" />
+                </label>
+                <label className="contact-field">
+                  <span>Email</span>
+                  <input type="email" name="email" value={formData.email} onChange={handleContactChange} required maxLength={120} placeholder="vous@example.com" inputMode="email" autoComplete="email" />
+                </label>
               </div>
-            </div>
+              <label className="contact-field contact-field--message">
+                <span>Message</span>
+                <textarea name="message" value={formData.message} onChange={handleContactChange} required minLength={10} maxLength={1000} placeholder="Parlez-moi de votre projet…" rows={5} />
+              </label>
+              <button type="submit" className="contact-submit" disabled={sending}>
+                <span>{sending ? "Envoi…" : "Envoyer le message"}</span>
+                <span aria-hidden="true">↗</span>
+              </button>
+            </form>
           </div>
         </div>
       </motion.section>

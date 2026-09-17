@@ -1,0 +1,33 @@
+.steam-widget {
+  position: fixed;
+  left: 24px;
+  bottom: 20px;
+  z-index: 951;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 310px;
+  max-width: calc(100vw - 48px);
+  box-sizing: border-box;
+  padding: 10px;
+  overflow: hidden;
+  border: 1px solid #2f7397;
+  border-radius: 14px;
+  background: rgba(8, 20, 31, 0.96);
+  color: #f2f6ff;
+  text-decoration: none;
+  box-shadow: 0 8px 30px #0006;
+}
+.steam-widget img { width: 72px; height: 42px; flex: 0 0 auto; border-radius: 7px; object-fit: cover; }
+.steam-widget__text { display: grid; min-width: 0; gap: 4px; }
+.steam-widget__text strong { overflow: hidden; font-size: .86rem; text-overflow: ellipsis; white-space: nowrap; }
+.steam-widget__label { color: #73c7f1; font-size: .65rem; }
+.steam-widget__status { width: 8px; height: 8px; margin-left: auto; flex: 0 0 auto; border-radius: 50%; background: #66c0f4; box-shadow: 0 0 0 5px #66c0f422, 0 0 16px #66c0f4aa; }
+.steam-widget:focus-visible { outline: 3px solid #73c7f1; outline-offset: 3px; }
+.app-shell:has(.spotify-widget) .steam-widget { bottom: 100px; }
+.app-shell:has(.steam-widget) .content .section { padding-bottom: 116px; }
+.app-shell:has(.spotify-widget):has(.steam-widget) .content .section { padding-bottom: 190px; }
+@media (max-width: 900px) {
+  .steam-widget { left: 16px; bottom: 12px; }
+  .app-shell:has(.spotify-widget) .steam-widget { bottom: 92px; }
+}

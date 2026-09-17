@@ -46,6 +46,30 @@ async function getNowPlaying(env) {
   };
 }
 
+async function getSteamActivity(env) {
+  if (!env.STEAM_API_KEY || !env.STEAM_ID) return { isPlaying: false };
+
+  const endpoint = new URL("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/");
+  endpoint.searchParams.set("key", env.STEAM_API_KEY);
+  endpoint.searchParams.set("steamids", env.STEAM_ID);
+  const response = await fetch(endpoint);
+  if (!response.ok) throw new Error("Steam activity unavailable");
+
+  const data = await response.json();
+  const player = data.response?.players?.[0];
+  if (!player?.gameid || !player?.gameextrainfo) return { isPlaying: false };
+
+  const appId = String(player.gameid);
+  return {
+    isPlaying: true,
+    title: player.gameextrainfo,
+    appId,
+    cover: `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg`,
+    url: `https://store.steampowered.com/app/${appId}`,
+    profileUrl: /^https:\/\/steamcommunity\.com\//.test(player.profileurl || "") ? player.profileurl : null,
+  };
+}
+
 export async function handleSpotifyRequest(request, env, ctx) {
   const url = new URL(request.url);
   const origin = request.headers.get("Origin");
@@ -53,18 +77,18 @@ export async function handleSpotifyRequest(request, env, ctx) {
     .split(",")
     .map((value) => value.trim());
 
-  if (url.pathname !== "/now-playing") return new Response(null, { status: 404 });
+  if (!["/now-playing", "/steam"].includes(url.pathname)) return new Response(null, { status: 404 });
   if (request.method !== "GET") return new Response(null, { status: 405, headers: { Allow: "GET" } });
   if (origin && !allowed.includes(origin)) return new Response(null, { status: 403 });
 
   const cache = caches.default;
-  const cacheKey = new Request("https://spotify-cache.internal/now-playing");
+  const cacheKey = new Request(`https://activity-cache.internal${url.pathname}`);
   const cached = await cache.match(cacheKey);
   if (cached) return json(await cached.json(), origin);
 
   let data;
   try {
-    data = await getNowPlaying(env);
+    data = url.pathname === "/steam" ? await getSteamActivity(env) : await getNowPlaying(env);
   } catch {
     data = { isPlaying: false };
   }

@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import "./InteractiveBackground.css";
 
+const artworks = [
+  { theme: "contact", src: "/ressources/backgrounds/contact.svg" },
+];
+
 export default function InteractiveBackground() {
   const backgroundRef = useRef(null);
 
@@ -41,6 +45,13 @@ export default function InteractiveBackground() {
 
   return (
     <div className="ambient-background" ref={backgroundRef} aria-hidden="true">
+      {artworks.map((artwork) => (
+        <div
+          className={`ambient-art ambient-art--${artwork.theme}`}
+          key={artwork.theme}
+          style={{ backgroundImage: `url("${artwork.src}")` }}
+        />
+      ))}
       <div className="ambient-field ambient-field--first"><div /></div>
       <div className="ambient-field ambient-field--second"><div /></div>
       <div className="ambient-grid" />

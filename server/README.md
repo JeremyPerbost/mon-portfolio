@@ -21,11 +21,19 @@ Le widget affiche la pochette, le titre, l’artiste et un lien Spotify pendant 
 
 6. Copier le `.env.example` à la racine vers `.env.local` et redémarrer le site. Seule l’URL publique du service y figure.
 
-## Mise en ligne recommandée : Cloudflare Worker
+## Mise en ligne permanente : Cloudflare Worker
 
-Le fichier `spotify-worker.mjs` est la version conçue pour la production. Dans Cloudflare Workers & Pages, créer un Worker nommé `jeremy-spotify-now-playing`, coller ce fichier ou le déployer avec Wrangler, puis ajouter trois **Secrets** : `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` et `SPOTIFY_REFRESH_TOKEN`. Ajouter aussi la variable publique `ALLOWED_ORIGINS=https://jeremyperbost.fr,http://localhost:3000`.
+Le fichier `spotify-worker.mjs` est la version conçue pour la production. Il fonctionne sur l'infrastructure Cloudflare même quand l'ordinateur personnel est éteint. GitHub Pages continue d'héberger le portfolio et OVH continue de gérer le domaine.
 
-Avec Wrangler, copier `wrangler.toml.example` vers `wrangler.toml`, puis exécuter depuis `server/` :
+Créer un compte Cloudflare, puis se connecter avec Wrangler :
+
+```sh
+npx wrangler login
+```
+
+Le fichier `wrangler.toml` est déjà configuré pour le Worker `jeremy-spotify-now-playing`. Ajouter ensuite les trois **Secrets** : `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` et `SPOTIFY_REFRESH_TOKEN`.
+
+Exécuter depuis `server/` :
 
 ```sh
 npx wrangler secret put SPOTIFY_CLIENT_ID

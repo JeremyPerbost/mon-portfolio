@@ -1,0 +1,11 @@
+name = "jeremy-spotify-now-playing"
+main = "spotify-worker.mjs"
+compatibility_date = "2026-09-17"
+workers_dev = true
+preview_urls = false
+
+[vars]
+ALLOWED_ORIGINS = "https://jeremyperbost.fr,http://localhost:3000"
+
+# Les identifiants Spotify sont enregistrés avec `wrangler secret put`.
+# Ils ne doivent jamais être ajoutés dans ce fichier.

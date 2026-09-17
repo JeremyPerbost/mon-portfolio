@@ -64,6 +64,18 @@ body[data-theme="contact"] {
   --pointer-visible: 0;
 }
 
+.ambient-art {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+body[data-theme="contact"] .ambient-art--contact { opacity: 0.48; }
+
 .ambient-field {
   position: absolute;
   width: 75vmax;

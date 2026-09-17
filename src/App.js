@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
 import InteractiveBackground from "./components/InteractiveBackground";
 import SpotifyWidget from "./components/SpotifyWidget";
+import SteamWidget from "./components/SteamWidget";
 import './App.css';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
       <div className="app-shell">
         <InteractiveBackground />
         <SpotifyWidget />
+        <SteamWidget />
         <NavBar brand="Jérémy Perbost" links={navLinks} />
 
         <main className="content">
