@@ -1,4 +1,4 @@
-const CACHE_SECONDS = 15;
+const CACHE_SECONDS = 4;
 
 function json(data, origin, status = 200) {
   const headers = {

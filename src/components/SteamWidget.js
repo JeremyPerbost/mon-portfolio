@@ -11,6 +11,7 @@ export default function SteamWidget({ endpoint = process.env.REACT_APP_STEAM_END
     let controller;
 
     const update = async () => {
+      let nextDelay = 15000;
       clearTimeout(timer);
       controller?.abort();
       if (document.hidden) return;
@@ -21,13 +22,14 @@ export default function SteamWidget({ endpoint = process.env.REACT_APP_STEAM_END
         const response = await fetch(endpoint, { signal: activeController.signal });
         if (!response.ok) throw new Error("Steam unavailable");
         const data = await response.json();
+        nextDelay = data.isPlaying ? 15000 : 10000;
         const validUrl = /^https:\/\/store\.steampowered\.com\/app\//.test(data.url || "");
         if (!disposed && controller === activeController) setGame(data.isPlaying && data.title && validUrl ? data : null);
       } catch {
         if (!disposed && controller === activeController) setGame(null);
       } finally {
         clearTimeout(timeout);
-        if (!disposed && controller === activeController && !document.hidden) timer = setTimeout(update, 60000);
+        if (!disposed && controller === activeController && !document.hidden) timer = setTimeout(update, nextDelay);
       }
     };
 
@@ -39,11 +41,13 @@ export default function SteamWidget({ endpoint = process.env.REACT_APP_STEAM_END
 
     update();
     document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("focus", update);
     return () => {
       disposed = true;
       clearTimeout(timer);
       controller?.abort();
       document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("focus", update);
     };
   }, [endpoint]);
 

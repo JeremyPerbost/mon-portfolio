@@ -10,6 +10,7 @@ export default function SpotifyWidget({ endpoint = process.env.REACT_APP_SPOTIFY
     let timer;
     let controller;
     const update = async () => {
+      let nextDelay = 15000;
       clearTimeout(timer);
       controller?.abort();
       if (document.hidden) return;
@@ -20,12 +21,13 @@ export default function SpotifyWidget({ endpoint = process.env.REACT_APP_SPOTIFY
         const response = await fetch(endpoint, { signal: controller.signal });
         if (!response.ok) throw new Error("Spotify unavailable");
         const data = await response.json();
+        nextDelay = data.isPlaying ? 15000 : 10000;
         if (!disposed && controller === activeController) setTrack(data.isPlaying && data.title && /^https:\/\/open\.spotify\.com\//.test(data.url) ? data : null);
       } catch {
         if (!disposed && controller === activeController) setTrack(null);
       } finally {
         clearTimeout(timeout);
-        if (!disposed && controller === activeController && !document.hidden) timer = setTimeout(update, 30000);
+        if (!disposed && controller === activeController && !document.hidden) timer = setTimeout(update, nextDelay);
       }
     };
     const visibility = () => {
@@ -35,11 +37,13 @@ export default function SpotifyWidget({ endpoint = process.env.REACT_APP_SPOTIFY
     };
     update();
     document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("focus", update);
     return () => {
       disposed = true;
       clearTimeout(timer);
       controller?.abort();
       document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("focus", update);
     };
   }, [endpoint]);
 

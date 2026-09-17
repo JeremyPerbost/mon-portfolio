@@ -17,7 +17,7 @@ test('shows a real response, then hides a paused track on the next refresh', asy
     .mockResolvedValueOnce({ ok: true, json: async () => ({ isPlaying: false }) });
   await act(async () => { render(<SpotifyWidget endpoint="https://example.test/now-playing" />); });
   expect(screen.getByRole('link', { name: /Test song/ })).toHaveAttribute('href', 'https://open.spotify.com/track/test');
-  await act(async () => { jest.advanceTimersByTime(30000); });
+  await act(async () => { jest.advanceTimersByTime(15000); });
   expect(screen.queryByRole('link')).not.toBeInTheDocument();
 });
 
