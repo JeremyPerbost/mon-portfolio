@@ -53,8 +53,8 @@ body[data-theme="contact"] {
 }
 
 body[data-theme="terminal"] {
-  --ambient-primary: #2aca8f;
-  --ambient-secondary: #284cb2;
+  --ambient-primary: #f0f6f0;
+  --ambient-secondary: #222323;
   --ambient-first-x: -18%;
   --ambient-first-y: 16%;
   --ambient-second-x: 52%;

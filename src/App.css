@@ -1356,6 +1356,12 @@ body .section.section-projects {
 
 body .section.section-terminal {
   padding: 30px max(48px, 6vw) 34px;
+  background: #222323;
+  color: #f0f6f0;
+}
+
+body .section.section-terminal::after {
+  display: none;
 }
 
 .terminal-section {
@@ -1368,6 +1374,10 @@ body .section.section-terminal {
 
 .terminal-section__header .section-heading {
   margin-bottom: 0;
+}
+
+.section-terminal .section-heading > span {
+  color: #f0f6f0;
 }
 
 .reveal {

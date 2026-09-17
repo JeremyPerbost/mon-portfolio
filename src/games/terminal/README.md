@@ -1,16 +1,14 @@
 # Terminal
 
-Mini-jeu Canvas du portfolio. Tout ce qui concerne le jeu reste dans ce dossier.
+Jeu de labyrinthe Canvas autonome. Le joueur contrôle un pixel clair et doit atteindre la sortie du labyrinthe avant la fin des deux minutes.
 
-- `TerminalGame.js` : composant React, boucle de jeu et contrôles.
-- `terminalEngine.js` : état, règles, collisions et dessin Canvas.
-- `TerminalGame.css` : interface du terminal et adaptation mobile.
+- `TerminalGame.js` : composant React, boucle de jeu, chronomètre et contrôles clavier/tactiles.
+- `terminalEngine.js` : génération du labyrinthe, collisions, caméra et dessin Canvas.
+- `TerminalGame.css` : interface responsive limitée aux couleurs `#222323` et `#f0f6f0`.
 
-Le jeu utilise une surface logique de 960 × 540 px puis s'adapte à l'espace disponible. Le record est enregistré dans `localStorage` sous la clé `terminal-best`. Aucune API ni aucun serveur ne sont nécessaires.
+Le labyrinthe mesure 61 × 61 cases et est recréé à chaque partie. Sa sortie correspond au point accessible le plus éloigné du départ. Aucune API ni aucun serveur ne sont nécessaires.
 
-Pour modifier rapidement le jeu :
-
-- Changez les mots et erreurs dans `goodTokens` et `badTokens`.
-- Ajustez la vitesse dans `updateTerminalGame`.
-- Ajoutez les règles et collisions dans `terminalEngine.js`.
-- Gardez les interactions React et l'accessibilité dans `TerminalGame.js`.
+- Changez `MAZE_SIZE` pour ajuster la taille du labyrinthe. La valeur doit rester impaire.
+- Changez `TIME_LIMIT` pour modifier le temps disponible.
+- Modifiez `tile` dans `drawTerminalGame` pour régler le niveau de zoom.
+- Ajoutez les règles de déplacement et de collision dans `updateTerminalGame`.

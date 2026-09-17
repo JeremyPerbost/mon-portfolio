@@ -2,54 +2,59 @@
   min-width: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  border: 1px solid rgba(113, 242, 182, .22);
-  border-radius: 22px;
   overflow: hidden;
-  background: rgba(4, 8, 18, .88);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, .42);
+  border: 2px solid #f0f6f0;
+  background: #222323;
+  color: #f0f6f0;
+  font-family: "Fira Code", Consolas, monospace;
 }
-.terminal-game__bar {
+.terminal-game__bar, .terminal-game__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 11px 16px;
-  border-bottom: 1px solid rgba(113, 242, 182, .16);
-  color: rgba(225, 244, 237, .65);
-  font: 700 .68rem "Fira Code", Consolas, monospace;
-  letter-spacing: .06em;
-  text-transform: uppercase;
+  padding: 10px 14px;
+  background: #222323;
+  color: #f0f6f0;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
 }
-.terminal-game__bar span:first-child { display: inline-flex; align-items: center; gap: 9px; color: #baffdf; }
-.terminal-game__bar i { width: 8px; height: 8px; border-radius: 50%; background: #71f2b6; box-shadow: 0 0 14px #71f2b6; }
-.terminal-game__screen { position: relative; min-height: 0; background: #050814; }
-.terminal-game canvas { display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; outline: none; cursor: crosshair; touch-action: none; }
-.terminal-game canvas:focus-visible { box-shadow: inset 0 0 0 3px #71f2b6; }
-.terminal-game__screen button {
+.terminal-game__bar { border-bottom: 2px solid #f0f6f0; }
+.terminal-game__footer { border-top: 2px solid #f0f6f0; }
+.terminal-game__screen { position: relative; min-height: 0; background: #222323; }
+.terminal-game canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  outline: none;
+  background: #222323;
+  image-rendering: pixelated;
+}
+.terminal-game canvas:focus-visible { outline: 2px solid #f0f6f0; outline-offset: -5px; }
+.terminal-game button {
+  border: 2px solid #f0f6f0;
+  background: #222323;
+  color: #f0f6f0;
+  font: 700 .75rem "Fira Code", Consolas, monospace;
+  cursor: pointer;
+}
+.terminal-game button:hover, .terminal-game button:focus-visible { background: #f0f6f0; color: #222323; outline: none; }
+.terminal-game__start {
   position: absolute;
   left: 50%;
-  top: 64%;
+  top: calc(50% + 74px);
   transform: translate(-50%, -50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  min-width: 190px;
-  padding: 13px 17px;
-  border: 1px solid #71f2b6;
-  border-radius: 999px;
-  background: #71f2b6;
-  color: #04100b;
-  font: 800 .85rem "Inter", sans-serif;
-  cursor: pointer;
-  transition: transform .2s ease, box-shadow .2s ease;
+  min-width: 180px;
+  padding: 12px 18px;
 }
-.terminal-game__screen button:hover { transform: translate(-50%, calc(-50% - 2px)); box-shadow: 0 12px 30px rgba(113, 242, 182, .25); }
-.terminal-game__help { display: flex; justify-content: space-between; gap: 16px; margin: 0; padding: 10px 16px; color: rgba(225, 244, 237, .52); font: 600 .68rem "Fira Code", Consolas, monospace; }
-@media (max-width: 640px) {
-  .terminal-game { border-radius: 16px; }
-  .terminal-game__bar { padding: 9px 12px; }
-  .terminal-game__help { padding: 9px 12px; }
-  .terminal-game__help span { display: none; }
+.terminal-game__pad { display: none; gap: 5px; }
+.terminal-game__pad button { width: 36px; height: 32px; padding: 0; touch-action: none; }
+@media (max-width: 700px), (pointer: coarse) {
+  .terminal-game__bar { gap: 8px; padding: 8px; font-size: .58rem; }
+  .terminal-game__footer { padding: 7px 8px; }
+  .terminal-game__footer > span { display: none; }
+  .terminal-game__pad { display: flex; width: 100%; justify-content: center; }
+  .terminal-game__pad button { width: 52px; height: 38px; }
 }
-@media (prefers-reduced-motion: reduce) { .terminal-game__screen button { transition: none; } }

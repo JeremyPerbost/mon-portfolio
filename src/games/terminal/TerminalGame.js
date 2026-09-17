@@ -1,27 +1,34 @@
 import { useEffect, useRef, useState } from "react";
-import { createTerminalGame, drawTerminalGame, TERMINAL_HEIGHT, TERMINAL_WIDTH, updateTerminalGame } from "./terminalEngine";
+import { createTerminalGame, drawTerminalGame, TERMINAL_HEIGHT, TERMINAL_WIDTH, TIME_LIMIT, updateTerminalGame } from "./terminalEngine";
 import "./TerminalGame.css";
+
+const keyDirections = {
+  arrowup: { x: 0, y: -1 }, w: { x: 0, y: -1 }, z: { x: 0, y: -1 },
+  arrowright: { x: 1, y: 0 }, d: { x: 1, y: 0 },
+  arrowdown: { x: 0, y: 1 }, s: { x: 0, y: 1 },
+  arrowleft: { x: -1, y: 0 }, a: { x: -1, y: 0 }, q: { x: -1, y: 0 },
+};
+
+function formatTime(seconds) {
+  const value = Math.max(0, Math.ceil(seconds));
+  return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
+}
 
 export default function TerminalGame() {
   const canvasRef = useRef(null);
   const gameRef = useRef(createTerminalGame());
-  const keysRef = useRef(new Set());
-  const pointerRef = useRef(null);
-  const runningRef = useRef(false);
-  const scoreRef = useRef(0);
-  const bestRef = useRef(Number(localStorage.getItem("terminal-best") || 0));
+  const keysRef = useRef([]);
   const [running, setRunning] = useState(false);
-  const [score, setScore] = useState(0);
-  const [best, setBest] = useState(bestRef.current);
+  const [remaining, setRemaining] = useState(TIME_LIMIT);
+  const [moves, setMoves] = useState(0);
 
   const start = () => {
     const next = createTerminalGame();
     next.running = true;
     gameRef.current = next;
-    pointerRef.current = null;
-    runningRef.current = true;
-    scoreRef.current = 0;
-    setScore(0);
+    keysRef.current = [];
+    setRemaining(TIME_LIMIT);
+    setMoves(0);
     setRunning(true);
     canvasRef.current?.focus();
   };
@@ -31,69 +38,74 @@ export default function TerminalGame() {
     const ctx = canvas.getContext("2d");
     let frame;
     let previous = performance.now();
+    let shownSecond = TIME_LIMIT;
+    let shownMoves = 0;
 
     const loop = (now) => {
       const delta = Math.min((now - previous) / 1000, 0.04);
       previous = now;
-      const keys = keysRef.current;
-      const direction = (keys.has("arrowright") || keys.has("d") ? 1 : 0) - (keys.has("arrowleft") || keys.has("a") ? 1 : 0);
       const game = gameRef.current;
-      updateTerminalGame(game, delta, direction, pointerRef.current);
+      const activeKey = keysRef.current[keysRef.current.length - 1];
+      updateTerminalGame(game, delta, keyDirections[activeKey] || null);
       drawTerminalGame(ctx, game);
-
-      if (game.score !== scoreRef.current) {
-        scoreRef.current = game.score;
-        setScore(game.score);
-        if (game.score > bestRef.current) {
-          bestRef.current = game.score;
-          setBest(game.score);
-          localStorage.setItem("terminal-best", String(game.score));
-        }
-      }
-      if (runningRef.current && game.gameOver) {
-        runningRef.current = false;
-        setRunning(false);
-      }
+      const second = Math.ceil(game.remaining);
+      if (second !== shownSecond) { shownSecond = second; setRemaining(second); }
+      if (game.moves !== shownMoves) { shownMoves = game.moves; setMoves(game.moves); }
+      if (!game.running && (game.won || game.timedOut)) setRunning(false);
       frame = requestAnimationFrame(loop);
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  const setKey = (key, pressed) => {
+    const normalized = key.toLowerCase();
+    if (!keyDirections[normalized]) return;
+    if (pressed && !keysRef.current.includes(normalized)) keysRef.current.push(normalized);
+    if (!pressed) keysRef.current = keysRef.current.filter((item) => item !== normalized);
+  };
+
   const handleKey = (event, pressed) => {
     const key = event.key.toLowerCase();
-    if (["arrowleft", "arrowright", "a", "d", " ", "enter"].includes(key)) event.preventDefault();
-    if (pressed) keysRef.current.add(key);
-    else keysRef.current.delete(key);
-    if (pressed && (event.key === " " || event.key === "Enter") && !running) start();
+    if (keyDirections[key] || key === " " || key === "enter") event.preventDefault();
+    setKey(key, pressed);
+    if (pressed && (key === " " || key === "enter") && !gameRef.current.running) start();
   };
 
-  const handlePointer = (event) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    pointerRef.current = ((event.clientX - bounds.left) / bounds.width) * TERMINAL_WIDTH;
-  };
-
+  const finished = gameRef.current.won || gameRef.current.timedOut;
   return (
     <div className="terminal-game">
-      <div className="terminal-game__bar">
-        <span><i /> terminal.exe</span>
-        <span>Score {score} · Record {best}</span>
-      </div>
+      <div className="terminal-game__bar"><span>TERMINAL</span><span>TEMPS {formatTime(remaining)}</span><span>PAS {moves}</span></div>
       <div className="terminal-game__screen">
         <canvas
           ref={canvasRef}
           width={TERMINAL_WIDTH}
           height={TERMINAL_HEIGHT}
           tabIndex={0}
-          aria-label="Jeu Terminal. Déplacez le curseur avec les flèches gauche et droite pour collecter le code vert et éviter les erreurs rouges."
+          aria-label="Labyrinthe Terminal. Déplacez le pixel avec les flèches ou les touches ZQSD pour trouver la sortie avant la fin du temps."
           onKeyDown={(event) => handleKey(event, true)}
           onKeyUp={(event) => handleKey(event, false)}
-          onPointerMove={handlePointer}
-          onPointerLeave={() => { pointerRef.current = null; }}
+          onBlur={() => { keysRef.current = []; }}
         />
-        {!running && <button type="button" onClick={start}>{gameRef.current.gameOver ? "Rejouer" : "Lancer le jeu"}<span aria-hidden="true">↗</span></button>}
+        {!running && <button type="button" className="terminal-game__start" onClick={start}>{finished ? "RECOMMENCER" : "COMMENCER"}</button>}
       </div>
-      <p className="terminal-game__help">← → / A D / souris <span>Collectez le vert · évitez le rouge</span></p>
+      <div className="terminal-game__footer">
+        <span>FLÈCHES / ZQSD</span>
+        <div className="terminal-game__pad" aria-label="Contrôles tactiles">
+          {[["↑", "arrowup"], ["←", "arrowleft"], ["↓", "arrowdown"], ["→", "arrowright"]].map(([label, key]) => (
+            <button
+              type="button"
+              key={key}
+              aria-label={key}
+              onPointerDown={(event) => { event.preventDefault(); setKey(key, true); }}
+              onPointerUp={() => setKey(key, false)}
+              onPointerCancel={() => setKey(key, false)}
+              onPointerLeave={() => setKey(key, false)}
+            >{label}</button>
+          ))}
+        </div>
+        <span>TROUVEZ LA SORTIE</span>
+      </div>
     </div>
   );
 }
