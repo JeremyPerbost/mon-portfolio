@@ -1,0 +1,11 @@
+name = "jeremy-spotify-now-playing"
+main = "spotify-worker.mjs"
+compatibility_date = "2026-09-17"
+
+[vars]
+ALLOWED_ORIGINS = "https://jeremyperbost.fr,http://localhost:3000"
+
+# Add these as encrypted secrets, never under [vars]:
+# SPOTIFY_CLIENT_ID
+# SPOTIFY_CLIENT_SECRET
+# SPOTIFY_REFRESH_TOKEN

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import ProjectGallery from "../components/ProjectGallery";
+import ExperienceGallery from "../components/ExperienceGallery";
 import emailjs from "@emailjs/browser";
 import { motion } from "framer-motion";
 
@@ -33,7 +35,37 @@ const skills = [
 
 const projects = [
   {
+    title: "Pebble Beach Golf Links",
+    category: "Rétro-ingénierie · Mega Drive",
+    visual: "retro",
+    href: "https://github.com/JeremyPerbost/pebble-beach-golf-links-md-disasm",
+    tagline: "Reconstruire un jeu Mega Drive, octet par octet.",
+    stack: ["Assembleur 68000", "Z80", "C", "Python", "Ghidra"],
+    description: "Désassemblage non officiel de Pebble Beach Golf Links : code documenté, reconstruction identique à l’original et outils pour modifier les ressources et étendre le jeu. La ROM originale n’est pas incluse.",
+  },
+  {
+    title: "MEMORY (Android)",
+    image: "/ressources/projets_image/memory_logo.png",
+    category: "Jeu mobile",
+    symbol: "2 × 2",
+    href: "https://play.google.com/store/apps/details?id=com.jeremyperbost.memory&hl=fr",
+    tagline: "Un jeu de mémoire à emporter partout.",
+    stack: ["Godot", "GDScript", "Firebase", "Android"],
+    description: "Jeu MEMORY mobile développé avec Godot, publié sur Android, avec sauvegarde des scores sur Firebase et publicités intégrées.",
+  },
+  {
+    title: "Critical System Verification",
+    category: "Systèmes distribués",
+    symbol: "↔",
+    href: "https://github.com/misterjc1/critical-system-verification-prf-26",
+    tagline: "Modéliser et vérifier la sécurité d’un réseau ferroviaire.",
+    stack: ["Scala 3", "Akka Typed", "Réseaux de Pétri"],
+    description: "Simulateur ferroviaire où trains, cantons, horloge et gares sont des acteurs autonomes. La sécurité des cantons est modélisée par un réseau de Pétri à jetons, avec une communication par messages sans état mutable partagé.",
+  },
+  {
     title: "Carnet de santé virtuel",
+    category: "Application web · Full-stack",
+    symbol: "+",
     href: "https://github.com/AssilM/CarnetDeSante",
     tagline: "Dossier médical numérique full-stack (patients, médecins, admins).",
     stack: ["React 19 + Vite", "Tailwind", "Node/Express", "PostgreSQL", "JWT", "Socket.IO", "Multer"],
@@ -42,6 +74,8 @@ const projects = [
   },
   {
     title: "Démineur en C",
+    category: "Jeu · Programmation C",
+    symbol: "",
     href: "https://github.com/JeremyPerbost/demineur",
     tagline: "Implémentation d'un démineur en C avec interface graphique simple.",
     stack: ["C", "Makefile", "SDL (affichage)"],
@@ -51,6 +85,8 @@ const projects = [
   },
   {
     title: "CY2PIE",
+    category: "Game jam · Multijoueur",
+    symbol: "×",
     href: "https://github.com/JeremyPerbost/gamejame-cytech",
     tagline: "Jeu Godot 2D multi toupies créé pour la game jam CYTech 2024/2025.",
     stack: ["Godot", "GDScript", "2D physics", "Boosts & power-ups", "Export Linux"],
@@ -59,6 +95,8 @@ const projects = [
   },
   {
     title: "Maison intelligente (Angular)",
+    category: "Application web · Domotique",
+    symbol: "⌂",
     href: "https://github.com/JeremyPerbost/ing1devweb",
     tagline: "Site web domotique (dashboard) en Angular avec backend Firebase.",
     stack: ["Angular", "Firebase", "EmailJS", "UUID tokens", "jsPDF", "Chart.js"],
@@ -67,6 +105,8 @@ const projects = [
   },
   {
     title: "CYnapse",
+    category: "Algorithmes · Graphes",
+    symbol: "↳",
     href: "https://github.com/Abde2lah/ProjetJAVA",
     tagline: "Éditeur/solveur de labyrinthes en JavaFX avec algorithmes de graphes.",
     stack: ["Java", "JavaFX", "Algorithmes de graphes (BFS/DFS)", "Maven"],
@@ -75,6 +115,8 @@ const projects = [
   },
   {
     title: "SAF (Spring Actor Framework)",
+    category: "Architecture · Microservices",
+    symbol: "{ }",
     href: "https://github.com/JeremyPerbost/JEE-Groupe3",
     tagline: "Plateforme tournois multi-agents inspirée d'Akka sur microservices Spring.",
     stack: ["Java 21", "Spring Boot 3", "Spring Cloud Eureka", "RabbitMQ", "Resilience4j", "MySQL", "Docker Compose", "Thymeleaf"],
@@ -83,10 +125,34 @@ const projects = [
   },
 ];
 
+const experiences = [
+  {
+    title: "Arizona State University (ASU)",
+    date: "Mai → Août 2026 · 4 mois",
+    supervisorName: "Jedidiah Crandall",
+    supervisorHref: "mailto:jedimaestro@asu.edu",
+    supervisorLabel: "jedimaestro@asu.edu",
+    project: "Assistance aux étudiants diplômés sur NetworkGenie, une application Android permettant à des appareils non rootés de manipuler leur trafic sortant. Intégration avec OONI pour mesurer la censure réseau, mise en place d’un environnement de test Android et étude de comportements réseau bas niveau.",
+    tools: ["Android", "NetworkGenie", "OONI", "Analyse réseau", "Censure Internet"],
+    logo: "/ressources/icones/logo-asu.png",
+    logoAlt: "Arizona State University",
+  },
+  {
+    title: "AJVDEC (Togo)",
+    date: "Juin → Août 2025",
+    supervisorName: "Julien Esso",
+    supervisorHref: "https://www.youtube.com/@codeurauchapeau",
+    supervisorLabel: "YouTube : @codeurauchapeau",
+    project: "Création d’un carnet de santé numérique pour l’association AJVDEC au Togo, avec un travail centré sur la structuration des dossiers patients et la facilité d’accès aux informations médicales.",
+    tools: ["Conception applicative", "Données de santé", "Organisation des dossiers"],
+  },
+];
+
 const sectionNav = [
   { id: "accueil", label: "Accueil" },
   { id: "about", label: "À propos" },
   { id: "competences", label: "Compétences" },
+  { id: "experiences", label: "Expériences" },
   { id: "projets", label: "Projets" },
   { id: "contact", label: "Contact" },
 ];
@@ -97,6 +163,17 @@ function Home() {
   const [activeSection, setActiveSection] = useState("accueil");
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    const targetId = decodeURIComponent(window.location.hash.slice(1));
+    if (!targetId) return undefined;
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ block: "start" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   useEffect(() => {
     let timer;
@@ -175,6 +252,8 @@ function Home() {
       let locked = false;
 
       const handleWheel = (event) => {
+        // Let horizontal swipes and the gallery's native vertical overflow scroll freely.
+        if (event.target.closest(".project-gallery, .experience-gallery")) return;
         if (locked) return;
         const delta = event.deltaY;
         if (Math.abs(delta) < 24) return;
@@ -300,7 +379,7 @@ function Home() {
             <img src="/ressources/photo.jpg" alt="Jérémy Perbost" loading="lazy" />
           </div>
           <div className="about-text">
-            <h2 className="section-heading">Qui suis-je ?</h2>
+            <h2 className="section-heading">À propos<span aria-hidden="true">.</span></h2>
             <p className="section-body">
               Je me présentes : Jérémy perbost, étudiant en deuxième année d'école d'ingénieur informatique à CY-tech. Passioné par l'informatique et la cybersécurité
             </p>
@@ -323,7 +402,7 @@ function Home() {
       >
         <div className="section-content skills">
           <div className="skills-header">
-            <h2 className="section-heading">Compétences</h2>
+            <h2 className="section-heading">Compétences<span aria-hidden="true">.</span></h2>
             <p className="section-body">
               Je suis organisé et rigoureux dans mon travail, habitué à collaborer efficacement en équipe. J’aime apprendre de nouvelles technologies et relever des défis techniques. Toujours force de proposition, je cherche à créer des solutions propres et efficaces.
             </p>
@@ -342,57 +421,25 @@ function Home() {
         </div>
       </motion.section>
 
-      <motion.section
+      <section
+        id="experiences"
+        className="section section-experiences"
+        data-theme-section="experiences"
+      >
+        <div className="section-content experiences">
+          <ExperienceGallery experiences={experiences} />
+        </div>
+      </section>
+
+      <section
         id="projets"
         className="section section-projects"
         data-theme-section="projects"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.35 }}
-        variants={sectionVariants}
-        custom={3}
       >
         <div className="section-content projects">
-          <div className="projects-panel">
-            <div className="projects-header">
-              <h2 className="section-heading">Mes projets</h2>
-              <p className="section-body">Vous pouvez découvrir une sélection de mes projets récents ci-dessous.</p>
-            </div>
-
-            <div className="projects-grid" role="list">
-              {projects.map((project) => (
-                <a
-                  key={project.href}
-                  href={project.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="project-card"
-                  role="listitem"
-                >
-                  <div className="project-card__glass" />
-                  <div className="project-card__content">
-                    <div className="project-card__header">
-                      <h3>{project.title}</h3>
-                      <span className="project-card__tagline">{project.tagline}</span>
-                    </div>
-                    <p className="project-card__desc">{project.description}</p>
-                    <div className="project-card__stack">
-                      {project.stack.map((tech) => (
-                        <span key={tech}>{tech}</span>
-                      ))}
-                    </div>
-                    {project.image && (
-                      <div className="project-card__thumb" aria-hidden="true">
-                        <img src={project.image} alt="" loading="lazy" />
-                      </div>
-                    )}
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
+          <ProjectGallery projects={projects} />
         </div>
-      </motion.section>
+      </section>
 
       <motion.section
         id="contact"
@@ -402,11 +449,11 @@ function Home() {
         whileInView="visible"
         viewport={{ once: true, amount: 0.35 }}
         variants={sectionVariants}
-        custom={4}
+        custom={5}
       >
         <div className="section-content contact">
           <div className="contact-header">
-            <h2 className="section-heading">Me contacter</h2>
+            <h2 className="section-heading">Me contacter<span aria-hidden="true">.</span></h2>
             <p className="section-body">
               Écrivez-moi pour une opportunité, une collaboration ou un retour sur mes projets.
             </p>

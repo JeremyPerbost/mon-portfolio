@@ -1,7 +1,7 @@
 {
   "name": "mon-portfolio",
   "version": "0.1.0",
-  "homepage": "https://JeremyPerbost.github.io/mon-portfolio",
+  "homepage": "https://jeremyperbost.fr",
   "private": true,
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

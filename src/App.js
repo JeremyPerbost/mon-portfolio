@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
+import InteractiveBackground from "./components/InteractiveBackground";
+import SpotifyWidget from "./components/SpotifyWidget";
 import './App.css';
 
 function App() {
@@ -9,6 +11,7 @@ function App() {
     { href: "#accueil", label: "Accueil" },
     { href: "#about", label: "À propos" },
     { href: "#competences", label: "Compétences" },
+    { href: "#experiences", label: "Expériences" },
     { href: "#projets", label: "Projets" },
     { href: "#contact", label: "Contact" },
     {
@@ -33,6 +36,8 @@ function App() {
   return (
     <Router>
       <div className="app-shell">
+        <InteractiveBackground />
+        <SpotifyWidget />
         <NavBar brand="Jérémy Perbost" links={navLinks} />
 
         <main className="content">
