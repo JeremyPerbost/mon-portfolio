@@ -12,9 +12,10 @@ const movementKeys = {
 
 export default function TerminalGame() {
   const canvasRef = useRef(null);
+  const screenRef = useRef(null);
   const gameRef = useRef(createTerminalGame());
   const assetsRef = useRef(null);
-  const keysRef = useRef(new Set());
+  const keysRef = useRef([]);
   const shootRef = useRef(false);
   const [ready, setReady] = useState(false);
   const [running, setRunning] = useState(false);
@@ -25,12 +26,33 @@ export default function TerminalGame() {
     const next = createTerminalGame();
     next.running = true;
     gameRef.current = next;
-    keysRef.current.clear();
+    keysRef.current = [];
     shootRef.current = false;
     setHud({ score: 0, lives: 3, distance: 0 });
     setRunning(true);
     canvasRef.current?.focus();
   };
+
+  useEffect(() => {
+    const screen = screenRef.current;
+    const canvas = canvasRef.current;
+    const fitCanvas = () => {
+      const width = screen.clientWidth;
+      const height = screen.clientHeight;
+      const ratio = TERMINAL_WIDTH / TERMINAL_HEIGHT;
+      if (width / height > ratio) {
+        canvas.style.width = `${height * ratio}px`;
+        canvas.style.height = `${height}px`;
+      } else {
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${width / ratio}px`;
+      }
+    };
+    const observer = new ResizeObserver(fitCanvas);
+    observer.observe(screen);
+    fitCanvas();
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -53,10 +75,11 @@ export default function TerminalGame() {
       const delta = Math.min((now - previous) / 1000, 0.035);
       previous = now;
       const keys = keysRef.current;
+      const activeDirection = keys[keys.length - 1];
       const game = gameRef.current;
       updateTerminalGame(game, delta, {
-        x: (keys.has("right") ? 1 : 0) - (keys.has("left") ? 1 : 0),
-        y: (keys.has("down") ? 1 : 0) - (keys.has("up") ? 1 : 0),
+        x: activeDirection === "right" ? 1 : activeDirection === "left" ? -1 : 0,
+        y: activeDirection === "down" ? 1 : activeDirection === "up" ? -1 : 0,
         shoot: shootRef.current,
       });
       drawTerminalGame(ctx, game, assetsRef.current);
@@ -75,8 +98,8 @@ export default function TerminalGame() {
   }, []);
 
   const setDirection = (direction, pressed) => {
-    if (pressed) keysRef.current.add(direction);
-    else keysRef.current.delete(direction);
+    keysRef.current = keysRef.current.filter((item) => item !== direction);
+    if (pressed) keysRef.current.push(direction);
   };
 
   const handleKey = (event, pressed) => {
@@ -98,7 +121,7 @@ export default function TerminalGame() {
   };
 
   const stopInputs = () => {
-    keysRef.current.clear();
+    keysRef.current = [];
     shootRef.current = false;
   };
 
@@ -107,7 +130,7 @@ export default function TerminalGame() {
       <div className="terminal-game__bar">
         <span>TERMINAL</span><span>SCORE {hud.score}</span><span>VIES {"■".repeat(hud.lives)}</span><span>DISTANCE {hud.distance}</span>
       </div>
-      <div className="terminal-game__screen">
+      <div className="terminal-game__screen" ref={screenRef}>
         <canvas
           ref={canvasRef}
           width={TERMINAL_WIDTH}

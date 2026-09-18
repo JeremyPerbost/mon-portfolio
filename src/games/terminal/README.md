@@ -10,4 +10,4 @@ Jeu de tir Canvas dans un labyrinthe infini. Le tank avance dans un monde géné
 
 Commandes : flèches ou ZQSD pour se déplacer, Espace ou clic pour tirer. Sur mobile, les commandes sont affichées sous le Canvas.
 
-Chaque zone mesure 640 × 640 pixels. Les quatre ouvertures sont toujours alignées avec les zones voisines, ce qui garantit un monde continu. Les obstacles intérieurs restent courts pour conserver des couloirs larges.
+Chaque zone contient un véritable labyrinthe généré par parcours récursif. Ses couloirs font 64 pixels de large et ses quatre ouvertures sont toujours alignées avec les zones voisines, ce qui garantit un monde continu. Le tank et les soldats se déplacent uniquement sur un axe à la fois, sans mouvement diagonal. Le Canvas conserve toujours son ratio 16:9.
