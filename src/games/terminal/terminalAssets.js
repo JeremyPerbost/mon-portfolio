@@ -40,10 +40,24 @@ const sources = {
   playerShotUp,
 };
 
+function removeWallBackground(image) {
+  const canvas = document.createElement("canvas");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0);
+  const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+  for (let index = 0; index < pixels.data.length; index += 4) {
+    if (pixels.data[index] === 34 && pixels.data[index + 1] === 35 && pixels.data[index + 2] === 35) pixels.data[index + 3] = 0;
+  }
+  context.putImageData(pixels, 0, 0);
+  return canvas;
+}
+
 export function loadTerminalAssets() {
   return Promise.all(Object.entries(sources).map(([name, source]) => new Promise((resolve, reject) => {
     const image = new Image();
-    image.onload = () => resolve([name, image]);
+    image.onload = () => resolve([name, name.startsWith("wall") ? removeWallBackground(image) : image]);
     image.onerror = reject;
     image.src = source;
   }))).then((entries) => Object.fromEntries(entries));

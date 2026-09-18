@@ -2,7 +2,7 @@ import { COLORS, createTerminalGame, updateTerminalGame } from "./terminalEngine
 
 test("crée un monde extensible avec la palette imposée", () => {
   const game = createTerminalGame();
-  expect(game.chunks.size).toBe(25);
+  expect(game.chunks.size).toBe(9);
   expect(game.player.lives).toBe(3);
   expect(COLORS).toEqual({ dark: "#222323", light: "#f0f6f0" });
 });
@@ -10,12 +10,12 @@ test("crée un monde extensible avec la palette imposée", () => {
 test("le tank peut tirer et traverser une ouverture entre deux zones", () => {
   const game = createTerminalGame();
   game.running = true;
-  game.player.x = 694;
-  game.player.y = 352;
+  game.player.x = 2038;
+  game.player.y = 1024;
   updateTerminalGame(game, 0.2, { x: 1, y: 0, shoot: false });
   updateTerminalGame(game, 0.01, { x: 0, y: 0, shoot: true });
 
-  expect(game.player.x).toBeGreaterThan(704);
+  expect(game.player.x).toBeGreaterThan(2048);
   expect(game.player.facing).toBe("right");
   expect(game.bullets.some((bullet) => bullet.owner === "player") || game.score === 100).toBe(true);
 });
@@ -42,4 +42,16 @@ test("les soldats changent de position sur un seul axe", () => {
     if (!start) return;
     expect(enemy.x !== start.x && enemy.y !== start.y).toBe(false);
   }));
+});
+
+test("élimine un soldat lorsque le tank lui roule dessus", () => {
+  const game = createTerminalGame();
+  const enemy = game.chunks.get("0,0").enemies.find((item) => item.alive);
+  game.player.x = enemy.x;
+  game.player.y = enemy.y;
+  game.running = true;
+  updateTerminalGame(game, 0.01, { x: 0, y: 0, shoot: false });
+
+  expect(enemy.alive).toBe(false);
+  expect(game.score).toBe(100);
 });

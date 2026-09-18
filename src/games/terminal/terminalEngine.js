@@ -4,7 +4,9 @@ export const COLORS = { dark: "#222323", light: "#f0f6f0" };
 
 const TILE = 32;
 const CELL_COUNT = 7;
-const CHUNK_TILES = CELL_COUNT * 3 + 1;
+const CORRIDOR_TILES = 8;
+const CELL_STRIDE = CORRIDOR_TILES + 1;
+const CHUNK_TILES = CELL_COUNT * CELL_STRIDE + 1;
 const CHUNK_SIZE = TILE * CHUNK_TILES;
 const PLAYER_SPEED = 175;
 const BULLET_SPEED = 430;
@@ -43,10 +45,10 @@ function wallSprites(grid, x, y) {
   const right = Boolean(grid[y]?.[x + 1]);
   const up = Boolean(grid[y - 1]?.[x]);
   const down = Boolean(grid[y + 1]?.[x]);
-  if (right && down && !left && !up) return ["wallTopLeft"];
-  if (left && down && !right && !up) return ["wallTopRight"];
-  if (right && up && !left && !down) return ["wallBottomLeft"];
-  if (left && up && !right && !down) return ["wallBottomRight"];
+  if (right && down && !left && !up) return ["wallBottomRight"];
+  if (left && down && !right && !up) return ["wallBottomLeft"];
+  if (right && up && !left && !down) return ["wallTopRight"];
+  if (left && up && !right && !down) return ["wallTopLeft"];
   if ((left || right) && !(up || down)) return ["wallHorizontal"];
   if ((up || down) && !(left || right)) return ["wallVertical"];
   return ["wallHorizontal", "wallVertical"];
@@ -59,12 +61,11 @@ function createMazeGrid(chunkX, chunkY) {
   const stack = [{ x: Math.floor(CELL_COUNT / 2), y: Math.floor(CELL_COUNT / 2) }];
 
   const clearCell = (cellX, cellY) => {
-    const startX = 1 + cellX * 3;
-    const startY = 1 + cellY * 3;
-    grid[startY][startX] = 0;
-    grid[startY][startX + 1] = 0;
-    grid[startY + 1][startX] = 0;
-    grid[startY + 1][startX + 1] = 0;
+    const startX = 1 + cellX * CELL_STRIDE;
+    const startY = 1 + cellY * CELL_STRIDE;
+    for (let y = 0; y < CORRIDOR_TILES; y += 1) {
+      for (let x = 0; x < CORRIDOR_TILES; x += 1) grid[startY + y][startX + x] = 0;
+    }
   };
 
   visited[stack[0].y][stack[0].x] = true;
@@ -81,20 +82,24 @@ function createMazeGrid(chunkX, chunkY) {
     const next = { x: current.x + nextDirection.x, y: current.y + nextDirection.y };
     visited[next.y][next.x] = true;
     clearCell(next.x, next.y);
-    const currentStartX = 1 + current.x * 3;
-    const currentStartY = 1 + current.y * 3;
-    if (nextDirection.x === 1) { grid[currentStartY][currentStartX + 2] = 0; grid[currentStartY + 1][currentStartX + 2] = 0; }
-    if (nextDirection.x === -1) { grid[currentStartY][currentStartX - 1] = 0; grid[currentStartY + 1][currentStartX - 1] = 0; }
-    if (nextDirection.y === 1) { grid[currentStartY + 2][currentStartX] = 0; grid[currentStartY + 2][currentStartX + 1] = 0; }
-    if (nextDirection.y === -1) { grid[currentStartY - 1][currentStartX] = 0; grid[currentStartY - 1][currentStartX + 1] = 0; }
+    const currentStartX = 1 + current.x * CELL_STRIDE;
+    const currentStartY = 1 + current.y * CELL_STRIDE;
+    for (let offset = 0; offset < CORRIDOR_TILES; offset += 1) {
+      if (nextDirection.x === 1) grid[currentStartY + offset][currentStartX + CORRIDOR_TILES] = 0;
+      if (nextDirection.x === -1) grid[currentStartY + offset][currentStartX - 1] = 0;
+      if (nextDirection.y === 1) grid[currentStartY + CORRIDOR_TILES][currentStartX + offset] = 0;
+      if (nextDirection.y === -1) grid[currentStartY - 1][currentStartX + offset] = 0;
+    }
     stack.push(next);
   }
 
-  const openingStart = 1 + Math.floor(CELL_COUNT / 2) * 3;
-  grid[0][openingStart] = 0; grid[0][openingStart + 1] = 0;
-  grid[CHUNK_TILES - 1][openingStart] = 0; grid[CHUNK_TILES - 1][openingStart + 1] = 0;
-  grid[openingStart][0] = 0; grid[openingStart + 1][0] = 0;
-  grid[openingStart][CHUNK_TILES - 1] = 0; grid[openingStart + 1][CHUNK_TILES - 1] = 0;
+  const openingStart = 1 + Math.floor(CELL_COUNT / 2) * CELL_STRIDE;
+  for (let offset = 0; offset < CORRIDOR_TILES; offset += 1) {
+    grid[0][openingStart + offset] = 0;
+    grid[CHUNK_TILES - 1][openingStart + offset] = 0;
+    grid[openingStart + offset][0] = 0;
+    grid[openingStart + offset][CHUNK_TILES - 1] = 0;
+  }
   return grid;
 }
 
@@ -116,8 +121,8 @@ function createChunk(chunkX, chunkY) {
   const enemyPositions = variant % 2 === 0 ? [{ x: 1, y: 1 }, { x: 5, y: 5 }] : [{ x: 5, y: 1 }, { x: 1, y: 5 }];
   const enemies = enemyPositions.map((position, index) => ({
     id: `${chunkKey(chunkX, chunkY)}-${index}`,
-    x: chunkX * CHUNK_SIZE + (2 + position.x * 3) * TILE,
-    y: chunkY * CHUNK_SIZE + (2 + position.y * 3) * TILE,
+    x: chunkX * CHUNK_SIZE + (1 + position.x * CELL_STRIDE + CORRIDOR_TILES / 2) * TILE,
+    y: chunkY * CHUNK_SIZE + (1 + position.y * CELL_STRIDE + CORRIDOR_TILES / 2) * TILE,
     facing: "down",
     cooldown: 0.7 + (hashCoordinates(chunkX, chunkY, index + 40) % 120) / 100,
     alive: !(chunkX === 0 && chunkY === 0 && index === 0),
@@ -179,13 +184,13 @@ export function createTerminalGame() {
     running: false,
     gameOver: false,
   };
-  getNearbyChunks(game, game.player.x, game.player.y, 2);
+  getNearbyChunks(game, game.player.x, game.player.y);
   return game;
 }
 
 function updateEnemies(game, delta) {
   const player = game.player;
-  const chunks = getNearbyChunks(game, player.x, player.y, 2);
+  const chunks = getNearbyChunks(game, player.x, player.y);
   chunks.forEach((chunk) => chunk.enemies.forEach((enemy) => {
     if (!enemy.alive) return;
     const dx = player.x - enemy.x;
@@ -243,6 +248,14 @@ function updateBullets(game, delta) {
   });
 }
 
+function eliminateRunOverEnemies(game) {
+  getNearbyChunks(game, game.player.x, game.player.y).forEach((chunk) => chunk.enemies.forEach((enemy) => {
+    if (!enemy.alive || Math.hypot(enemy.x - game.player.x, enemy.y - game.player.y) >= 28) return;
+    enemy.alive = false;
+    game.score += 100;
+  }));
+}
+
 export function updateTerminalGame(game, delta, input = {}) {
   if (!game.running) return;
   const player = game.player;
@@ -259,6 +272,7 @@ export function updateTerminalGame(game, delta, input = {}) {
   if (moveX || moveY) player.facing = facingFromVector(moveX, moveY, player.facing);
   const moved = moveEntity(game, player, moveX * PLAYER_SPEED, moveY * PLAYER_SPEED, delta, 12);
   if (moved) { player.animation += delta; game.distance += PLAYER_SPEED * delta; }
+  eliminateRunOverEnemies(game);
 
   if (input.shoot && player.cooldown === 0) {
     createBullet(game, "player", player.x, player.y, player.facing);
@@ -288,7 +302,7 @@ export function drawTerminalGame(ctx, game, assets) {
 
   const cameraX = game.player.x - TERMINAL_WIDTH / 2;
   const cameraY = game.player.y - TERMINAL_HEIGHT / 2;
-  const chunks = getNearbyChunks(game, game.player.x, game.player.y, 2);
+  const chunks = getNearbyChunks(game, game.player.x, game.player.y);
 
   chunks.forEach((chunk) => chunk.walls.forEach((wall) => {
     if (!isVisible(wall.x, wall.y, cameraX, cameraY)) return;
