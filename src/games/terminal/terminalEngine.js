@@ -19,6 +19,7 @@ function zoneKey(x, y) { return `${x},${y}`; }
 function worldZone(value) { return Math.floor(value / WORLD_ZONE_SIZE); }
 
 function createEnemy(zoneX, zoneY, index, localX, localY, formation = false) {
+  const seed = hashCoordinates(zoneX, zoneY, index + 90);
   return {
     id: `${zoneKey(zoneX, zoneY)}-${index}`,
     x: zoneX * WORLD_ZONE_SIZE + localX,
@@ -27,6 +28,10 @@ function createEnemy(zoneX, zoneY, index, localX, localY, formation = false) {
     cooldown: 0.8 + (hashCoordinates(zoneX, zoneY, index + 40) % 120) / 100,
     alive: true,
     formation,
+    patrolAxis: seed & 1 ? "x" : "y",
+    patrolDirection: seed & 2 ? 1 : -1,
+    strafeDirection: seed & 4 ? 1 : -1,
+    decisionTimer: 0.8 + (seed % 140) / 100,
   };
 }
 
@@ -37,24 +42,33 @@ function createZone(zoneX, zoneY) {
   let formation = null;
 
   if (hasFormation) {
-    const horizontalRow = seed % 2 === 0;
-    const count = 5;
-    const spacing = 58;
-    const centerX = 300 + (seed % 360);
-    const centerY = 300 + ((seed >>> 5) % 360);
-    enemies = Array.from({ length: count }, (_, index) => createEnemy(
-      zoneX,
-      zoneY,
-      index,
-      horizontalRow ? centerX + (index - 2) * spacing : centerX,
-      horizontalRow ? centerY : centerY + (index - 2) * spacing,
-      true,
-    ));
+    const formationSizes = [{ columns: 8, rows: 2 }, { columns: 8, rows: 3 }, { columns: 8, rows: 4 }];
+    const size = formationSizes[(seed >>> 2) % formationSizes.length];
+    const spacing = 48;
+    const centerX = 480 + ((seed >>> 5) % 181) - 90;
+    const centerY = 480 + ((seed >>> 9) % 181) - 90;
+    enemies = Array.from({ length: size.columns * size.rows }, (_, index) => {
+      const column = index % size.columns;
+      const row = Math.floor(index / size.columns);
+      const enemy = createEnemy(
+        zoneX,
+        zoneY,
+        index,
+        centerX + (column - (size.columns - 1) / 2) * spacing,
+        centerY + (row - (size.rows - 1) / 2) * spacing,
+        true,
+      );
+      enemy.formationColumn = column;
+      enemy.formationRow = row;
+      return enemy;
+    });
     formation = {
-      axis: horizontalRow ? "y" : "x",
+      axis: seed % 2 === 0 ? "y" : "x",
       direction: seed & 1 ? 1 : -1,
       travelled: 0,
       range: 190 + (seed % 100),
+      columns: size.columns,
+      rows: size.rows,
     };
   } else {
     const positions = [
@@ -130,15 +144,37 @@ function moveFormation(zone, delta) {
   }
 }
 
-function moveEnemyTowardPlayer(enemy, player, delta) {
+function moveSoloEnemy(enemy, player, delta) {
   const dx = player.x - enemy.x;
   const dy = player.y - enemy.y;
   const distance = Math.hypot(dx, dy);
-  if (distance <= 175 || distance > 760) return;
-  const horizontal = { x: Math.sign(dx), y: 0 };
-  const vertical = { x: 0, y: Math.sign(dy) };
-  const direction = Math.abs(dx) >= Math.abs(dy) ? horizontal : vertical;
-  const speed = 56;
+  enemy.decisionTimer -= delta;
+  if (enemy.decisionTimer <= 0) {
+    enemy.decisionTimer = 1.1 + (hashCoordinates(Math.round(enemy.x), Math.round(enemy.y), Math.round(distance)) % 120) / 100;
+    enemy.strafeDirection *= -1;
+    if (distance > 760) enemy.patrolDirection *= -1;
+  }
+
+  let direction;
+  let speed = 56;
+  if (distance > 760) {
+    direction = enemy.patrolAxis === "x" ? { x: enemy.patrolDirection, y: 0 } : { x: 0, y: enemy.patrolDirection };
+    speed = 38;
+  } else if (distance > 310) {
+    direction = Math.abs(dx) >= Math.abs(dy) ? { x: Math.sign(dx), y: 0 } : { x: 0, y: Math.sign(dy) };
+  } else if (distance < 145) {
+    direction = Math.abs(dx) >= Math.abs(dy) ? { x: -Math.sign(dx), y: 0 } : { x: 0, y: -Math.sign(dy) };
+    speed = 66;
+  } else if (Math.min(Math.abs(dx), Math.abs(dy)) > 52) {
+    direction = Math.abs(dx) < Math.abs(dy) ? { x: Math.sign(dx), y: 0 } : { x: 0, y: Math.sign(dy) };
+    speed = 48;
+  } else {
+    direction = Math.abs(dx) >= Math.abs(dy)
+      ? { x: 0, y: enemy.strafeDirection }
+      : { x: enemy.strafeDirection, y: 0 };
+    speed = 44;
+  }
+
   enemy.x += direction.x * speed * delta;
   enemy.y += direction.y * speed * delta;
   enemy.facing = facingFromVector(direction.x, direction.y, enemy.facing);
@@ -152,7 +188,7 @@ function updateEnemies(game, delta) {
     zone.enemies.forEach((enemy) => {
       if (!enemy.alive) return;
       enemy.cooldown = Math.max(0, enemy.cooldown - delta);
-      if (!enemy.formation) moveEnemyTowardPlayer(enemy, player, delta);
+      if (!enemy.formation) moveSoloEnemy(enemy, player, delta);
       const dx = player.x - enemy.x;
       const dy = player.y - enemy.y;
       const distance = Math.hypot(dx, dy);

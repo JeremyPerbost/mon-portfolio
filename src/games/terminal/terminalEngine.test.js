@@ -5,7 +5,9 @@ test("crée un monde extensible avec la palette imposée", () => {
   expect(game.zones.size).toBe(9);
   expect(game.player.lives).toBe(3);
   expect(COLORS).toEqual({ dark: "#222323", light: "#f0f6f0" });
-  expect([...game.zones.values()].some((zone) => zone.formation)).toBe(true);
+  const formations = [...game.zones.values()].filter((zone) => zone.formation);
+  expect(formations.length).toBeGreaterThan(0);
+  expect(formations.every((zone) => zone.enemies.length >= 16 && zone.enemies.length <= 32)).toBe(true);
 });
 
 test("le tank peut tirer et traverser une ouverture entre deux zones", () => {
@@ -38,11 +40,14 @@ test("les soldats changent de position sur un seul axe", () => {
   game.zones.forEach((zone) => zone.enemies.forEach((enemy) => before.set(enemy.id, { x: enemy.x, y: enemy.y })));
   updateTerminalGame(game, 0.1, { x: 0, y: 0, shoot: false });
 
+  let movingEnemies = 0;
   game.zones.forEach((zone) => zone.enemies.forEach((enemy) => {
     const start = before.get(enemy.id);
     if (!start) return;
+    if (enemy.x !== start.x || enemy.y !== start.y) movingEnemies += 1;
     expect(enemy.x !== start.x && enemy.y !== start.y).toBe(false);
   }));
+  expect(movingEnemies).toBeGreaterThan(0);
 });
 
 test("élimine un soldat lorsque le tank lui roule dessus", () => {

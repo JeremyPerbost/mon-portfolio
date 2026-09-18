@@ -10,4 +10,4 @@ Jeu de tir Canvas dans une arène ouverte infinie. Le tank avance dans un monde 
 
 Commandes : flèches ou ZQSD pour se déplacer, Espace ou clic pour tirer. Sur mobile, les commandes sont affichées sous le Canvas.
 
-Chaque zone peut générer des soldats indépendants ou une rangée de cinq soldats qui patrouille en formation sur un axe. Le tank et les soldats se déplacent uniquement horizontalement ou verticalement. Un soldat est éliminé si le tank lui roule dessus. Le Canvas conserve toujours son ratio 16:9 et l’animation de tir garde la même taille que le tank au repos.
+Chaque zone peut générer des soldats indépendants ou une patrouille structurée en grille de 8×2, 8×3 ou 8×4 soldats. La grille entière avance en formation sur un axe. Le tank et les soldats se déplacent uniquement horizontalement ou verticalement. Un soldat est éliminé si le tank lui roule dessus. Le Canvas conserve toujours son ratio 16:9 et l’animation de tir garde la même taille que le tank au repos.
