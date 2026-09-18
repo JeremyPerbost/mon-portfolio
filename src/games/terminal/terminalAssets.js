@@ -54,11 +54,43 @@ function removeWallBackground(image) {
   return canvas;
 }
 
+function createWallMasks(assets) {
+  const cornerAssets = {
+    5: assets.wallTopLeft,
+    6: assets.wallTopRight,
+    9: assets.wallBottomLeft,
+    10: assets.wallBottomRight,
+  };
+  return Array.from({ length: 16 }, (_, mask) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 32;
+    canvas.height = 32;
+    const context = canvas.getContext("2d");
+    if (cornerAssets[mask]) {
+      context.drawImage(cornerAssets[mask], 0, 0);
+      return canvas;
+    }
+    if (mask & 1) context.drawImage(assets.wallHorizontal, 0, 0, 18, 32, 0, 0, 18, 32);
+    if (mask & 2) context.drawImage(assets.wallHorizontal, 14, 0, 18, 32, 14, 0, 18, 32);
+    if (mask & 4) context.drawImage(assets.wallVertical, 0, 0, 32, 18, 0, 0, 32, 18);
+    if (mask & 8) context.drawImage(assets.wallVertical, 0, 14, 32, 18, 0, 14, 32, 18);
+    if (mask === 0) {
+      context.fillStyle = "#f0f6f0";
+      context.fillRect(14, 14, 4, 4);
+    }
+    return canvas;
+  });
+}
+
 export function loadTerminalAssets() {
   return Promise.all(Object.entries(sources).map(([name, source]) => new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve([name, name.startsWith("wall") ? removeWallBackground(image) : image]);
     image.onerror = reject;
     image.src = source;
-  }))).then((entries) => Object.fromEntries(entries));
+  }))).then((entries) => {
+    const assets = Object.fromEntries(entries);
+    assets.wallMasks = createWallMasks(assets);
+    return assets;
+  });
 }

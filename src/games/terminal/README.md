@@ -4,7 +4,7 @@ Jeu de tir Canvas dans un labyrinthe infini. Le tank avance dans un monde géné
 
 - `TerminalGame.js` : composant React, chargement des images et contrôles clavier, souris et tactiles.
 - `terminalEngine.js` : génération infinie, collisions, caméra, ennemis, projectiles et rendu.
-- `terminalAssets.js` : imports et préchargement des sprites.
+- `terminalAssets.js` : imports, préchargement et composition des 16 raccords de murs à partir des sprites fournis.
 - `TerminalGame.css` : interface responsive limitée à `#222323` et `#f0f6f0`.
 - `assets/` : copie locale de tous les sprites fournis.
 

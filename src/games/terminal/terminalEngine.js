@@ -40,18 +40,12 @@ function shuffledDirections(random) {
   return values;
 }
 
-function wallSprites(grid, x, y) {
+function wallMask(grid, x, y) {
   const left = Boolean(grid[y]?.[x - 1]);
   const right = Boolean(grid[y]?.[x + 1]);
   const up = Boolean(grid[y - 1]?.[x]);
   const down = Boolean(grid[y + 1]?.[x]);
-  if (right && down && !left && !up) return ["wallBottomRight"];
-  if (left && down && !right && !up) return ["wallBottomLeft"];
-  if (right && up && !left && !down) return ["wallTopRight"];
-  if (left && up && !right && !down) return ["wallTopLeft"];
-  if ((left || right) && !(up || down)) return ["wallHorizontal"];
-  if ((up || down) && !(left || right)) return ["wallVertical"];
-  return ["wallHorizontal", "wallVertical"];
+  return (left ? 1 : 0) | (right ? 2 : 0) | (up ? 4 : 0) | (down ? 8 : 0);
 }
 
 function createMazeGrid(chunkX, chunkY) {
@@ -113,7 +107,7 @@ function createChunk(chunkX, chunkY) {
       y: chunkY * CHUNK_SIZE + tileY * TILE,
       width: TILE,
       height: TILE,
-      types: wallSprites(grid, tileX, tileY),
+      mask: wallMask(grid, tileX, tileY),
     });
   }));
 
@@ -306,7 +300,7 @@ export function drawTerminalGame(ctx, game, assets) {
 
   chunks.forEach((chunk) => chunk.walls.forEach((wall) => {
     if (!isVisible(wall.x, wall.y, cameraX, cameraY)) return;
-    wall.types.forEach((type) => ctx.drawImage(assets[type], Math.round(wall.x - cameraX), Math.round(wall.y - cameraY), TILE, TILE));
+    ctx.drawImage(assets.wallMasks[wall.mask], Math.round(wall.x - cameraX), Math.round(wall.y - cameraY), TILE, TILE);
   }));
 
   chunks.forEach((chunk) => chunk.enemies.forEach((enemy) => {
