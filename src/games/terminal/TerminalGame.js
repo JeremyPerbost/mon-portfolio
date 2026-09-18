@@ -1,110 +1,157 @@
 import { useEffect, useRef, useState } from "react";
-import { createTerminalGame, drawTerminalGame, TERMINAL_HEIGHT, TERMINAL_WIDTH, TIME_LIMIT, updateTerminalGame } from "./terminalEngine";
+import { createTerminalGame, drawTerminalGame, TERMINAL_HEIGHT, TERMINAL_WIDTH, updateTerminalGame } from "./terminalEngine";
+import { loadTerminalAssets } from "./terminalAssets";
 import "./TerminalGame.css";
 
-const keyDirections = {
-  arrowup: { x: 0, y: -1 }, w: { x: 0, y: -1 }, z: { x: 0, y: -1 },
-  arrowright: { x: 1, y: 0 }, d: { x: 1, y: 0 },
-  arrowdown: { x: 0, y: 1 }, s: { x: 0, y: 1 },
-  arrowleft: { x: -1, y: 0 }, a: { x: -1, y: 0 }, q: { x: -1, y: 0 },
+const movementKeys = {
+  arrowup: "up", w: "up", z: "up",
+  arrowright: "right", d: "right",
+  arrowdown: "down", s: "down",
+  arrowleft: "left", a: "left", q: "left",
 };
-
-function formatTime(seconds) {
-  const value = Math.max(0, Math.ceil(seconds));
-  return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
-}
 
 export default function TerminalGame() {
   const canvasRef = useRef(null);
   const gameRef = useRef(createTerminalGame());
-  const keysRef = useRef([]);
+  const assetsRef = useRef(null);
+  const keysRef = useRef(new Set());
+  const shootRef = useRef(false);
+  const [ready, setReady] = useState(false);
   const [running, setRunning] = useState(false);
-  const [remaining, setRemaining] = useState(TIME_LIMIT);
-  const [moves, setMoves] = useState(0);
+  const [hud, setHud] = useState({ score: 0, lives: 3, distance: 0 });
 
   const start = () => {
+    if (!assetsRef.current) return;
     const next = createTerminalGame();
     next.running = true;
     gameRef.current = next;
-    keysRef.current = [];
-    setRemaining(TIME_LIMIT);
-    setMoves(0);
+    keysRef.current.clear();
+    shootRef.current = false;
+    setHud({ score: 0, lives: 3, distance: 0 });
     setRunning(true);
     canvasRef.current?.focus();
   };
+
+  useEffect(() => {
+    let active = true;
+    loadTerminalAssets().then((assets) => {
+      if (!active) return;
+      assetsRef.current = assets;
+      setReady(true);
+    });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let frame;
     let previous = performance.now();
-    let shownSecond = TIME_LIMIT;
-    let shownMoves = 0;
+    let previousHud = "0,3,0";
 
     const loop = (now) => {
-      const delta = Math.min((now - previous) / 1000, 0.04);
+      const delta = Math.min((now - previous) / 1000, 0.035);
       previous = now;
+      const keys = keysRef.current;
       const game = gameRef.current;
-      const activeKey = keysRef.current[keysRef.current.length - 1];
-      updateTerminalGame(game, delta, keyDirections[activeKey] || null);
-      drawTerminalGame(ctx, game);
-      const second = Math.ceil(game.remaining);
-      if (second !== shownSecond) { shownSecond = second; setRemaining(second); }
-      if (game.moves !== shownMoves) { shownMoves = game.moves; setMoves(game.moves); }
-      if (!game.running && (game.won || game.timedOut)) setRunning(false);
+      updateTerminalGame(game, delta, {
+        x: (keys.has("right") ? 1 : 0) - (keys.has("left") ? 1 : 0),
+        y: (keys.has("down") ? 1 : 0) - (keys.has("up") ? 1 : 0),
+        shoot: shootRef.current,
+      });
+      drawTerminalGame(ctx, game, assetsRef.current);
+
+      const distance = Math.floor(game.distance / 32);
+      const hudKey = `${game.score},${game.player.lives},${distance}`;
+      if (hudKey !== previousHud) {
+        previousHud = hudKey;
+        setHud({ score: game.score, lives: game.player.lives, distance });
+      }
+      if (game.gameOver) setRunning(false);
       frame = requestAnimationFrame(loop);
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  const setKey = (key, pressed) => {
-    const normalized = key.toLowerCase();
-    if (!keyDirections[normalized]) return;
-    if (pressed && !keysRef.current.includes(normalized)) keysRef.current.push(normalized);
-    if (!pressed) keysRef.current = keysRef.current.filter((item) => item !== normalized);
+  const setDirection = (direction, pressed) => {
+    if (pressed) keysRef.current.add(direction);
+    else keysRef.current.delete(direction);
   };
 
   const handleKey = (event, pressed) => {
     const key = event.key.toLowerCase();
-    if (keyDirections[key] || key === " " || key === "enter") event.preventDefault();
-    setKey(key, pressed);
-    if (pressed && (key === " " || key === "enter") && !gameRef.current.running) start();
+    const direction = movementKeys[key];
+    if (direction || key === " " || key === "enter") event.preventDefault();
+    if (direction) setDirection(direction, pressed);
+    if (key === " " || key === "enter") shootRef.current = pressed;
+    if (pressed && key === "enter" && !gameRef.current.running) start();
   };
 
-  const finished = gameRef.current.won || gameRef.current.timedOut;
+  const aimAndShoot = (event) => {
+    if (!gameRef.current.running) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width) * TERMINAL_WIDTH - TERMINAL_WIDTH / 2;
+    const y = ((event.clientY - bounds.top) / bounds.height) * TERMINAL_HEIGHT - TERMINAL_HEIGHT / 2;
+    gameRef.current.player.facing = Math.abs(x) > Math.abs(y) ? (x > 0 ? "right" : "left") : (y > 0 ? "down" : "up");
+    shootRef.current = true;
+  };
+
+  const stopInputs = () => {
+    keysRef.current.clear();
+    shootRef.current = false;
+  };
+
   return (
     <div className="terminal-game">
-      <div className="terminal-game__bar"><span>TERMINAL</span><span>TEMPS {formatTime(remaining)}</span><span>PAS {moves}</span></div>
+      <div className="terminal-game__bar">
+        <span>TERMINAL</span><span>SCORE {hud.score}</span><span>VIES {"■".repeat(hud.lives)}</span><span>DISTANCE {hud.distance}</span>
+      </div>
       <div className="terminal-game__screen">
         <canvas
           ref={canvasRef}
           width={TERMINAL_WIDTH}
           height={TERMINAL_HEIGHT}
           tabIndex={0}
-          aria-label="Labyrinthe Terminal. Déplacez le pixel avec les flèches ou les touches ZQSD pour trouver la sortie avant la fin du temps."
+          aria-label="Jeu Terminal. Déplacez le tank dans le labyrinthe infini et tirez sur les soldats ennemis."
           onKeyDown={(event) => handleKey(event, true)}
           onKeyUp={(event) => handleKey(event, false)}
-          onBlur={() => { keysRef.current = []; }}
+          onBlur={stopInputs}
+          onPointerDown={aimAndShoot}
+          onPointerUp={() => { shootRef.current = false; }}
+          onPointerCancel={() => { shootRef.current = false; }}
+          onContextMenu={(event) => event.preventDefault()}
         />
-        {!running && <button type="button" className="terminal-game__start" onClick={start}>{finished ? "RECOMMENCER" : "COMMENCER"}</button>}
+        {!running && (
+          <button type="button" className="terminal-game__start" onClick={start} disabled={!ready}>
+            {ready ? (gameRef.current.gameOver ? "RECOMMENCER" : "COMMENCER") : "CHARGEMENT"}
+          </button>
+        )}
       </div>
       <div className="terminal-game__footer">
         <span>FLÈCHES / ZQSD</span>
         <div className="terminal-game__pad" aria-label="Contrôles tactiles">
-          {[["↑", "arrowup"], ["←", "arrowleft"], ["↓", "arrowdown"], ["→", "arrowright"]].map(([label, key]) => (
+          {[["↑", "up"], ["←", "left"], ["↓", "down"], ["→", "right"]].map(([label, direction]) => (
             <button
               type="button"
-              key={key}
-              aria-label={key}
-              onPointerDown={(event) => { event.preventDefault(); setKey(key, true); }}
-              onPointerUp={() => setKey(key, false)}
-              onPointerCancel={() => setKey(key, false)}
-              onPointerLeave={() => setKey(key, false)}
+              key={direction}
+              aria-label={direction}
+              onPointerDown={(event) => { event.preventDefault(); setDirection(direction, true); }}
+              onPointerUp={() => setDirection(direction, false)}
+              onPointerCancel={() => setDirection(direction, false)}
+              onPointerLeave={() => setDirection(direction, false)}
             >{label}</button>
           ))}
+          <button
+            type="button"
+            className="terminal-game__fire"
+            onPointerDown={(event) => { event.preventDefault(); shootRef.current = true; }}
+            onPointerUp={() => { shootRef.current = false; }}
+            onPointerCancel={() => { shootRef.current = false; }}
+            onPointerLeave={() => { shootRef.current = false; }}
+          >TIR</button>
         </div>
-        <span>TROUVEZ LA SORTIE</span>
+        <span>ESPACE / CLIC POUR TIRER</span>
       </div>
     </div>
   );
